@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>頭城小知識 Toucheng Ocean Trivia</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sky-blue: #e0f2fe;
+            --ocean-light: #38bdf8;
+            --ocean-deep: #0284c7;
+            --ocean-dark: #0f172a;
+            --wave-white: #ffffff;
+            --sand-warm: #fef3c7;
+            --sand-accent: #f59e0b;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang TC", "Microsoft JhengHei", sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 浪花裝飾背景 */
+        .wave-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 220px;
+            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+            clip-path: ellipse(150% 100% at 50% 0%);
+            z-index: 0;
+        }
+
+        /* Header */
+        header {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 35px 20px 20px;
+            color: var(--wave-white);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 14px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        p.subtitle {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        /* View Mode Switcher */
+        .controls {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+            margin: 10px auto 20px;
+            padding: 0 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .toggle-btn {
+            background: var(--wave-white);
+            border: 1px solid rgba(2, 132, 199, 0.2);
+            color: var(--ocean-deep);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toggle-btn.active {
+            background: var(--ocean-deep);
+            color: var(--wave-white);
+            border-color: var(--ocean-deep);
+        }
+
+        /* Swiper / Slider Area */
+        .slider-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 10px 20px 30px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .swipe-hint {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--ocean-deep);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .swiper-wrapper {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            perspective: 1000px;
+        }
+
+        .card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--wave-white);
+            border-radius: 24px;
+            padding: 30px 25px;
+            box-shadow: var(--card-shadow);
+            border: 2px solid rgba(224, 242, 254, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
+            user-select: none;
+            touch-action: pan-y;
+        }
+
+        /* Card internals */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-num {
+            background: var(--sky-blue);
+            color: var(--ocean-deep);
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            color: var(--ocean-light);
+        }
+
+        .card-body {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: var(--text-main);
+            font-weight: 500;
+            overflow-y: auto;
+            max-height: 220px;
+            padding-right: 5px;
+        }
+
+        .card-list {
+            list-style: none;
+            margin-top: 12px;
+        }
+
+        .card-list li {
+            position: relative;
+            padding-left: 18px;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+            color: #475569;
+        }
+
+        .card-list li::before {
+            content: "•";
+            color: var(--ocean-light);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .card-tag {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: #f8fafc;
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+
+        .card-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .nav-btn {
+            background: var(--wave-white);
+            border: 1px solid rgba(2, 132, 199, 0.2);
+            color: var(--ocean-deep);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.92);
+        }
+
+        .page-indicator {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--ocean-deep);
+        }
+
+        /* Grid View Mode (Fallback/Alternative) */
+        .grid-container {
+            display: none;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .grid-container .card {
+            position: relative;
+            height: 320px;
+        }
+
+        /* Responsive Modifications */
+        @media (max-width: 480px) {
+            h1 { font-size: 1.8rem; }
+            .swiper-wrapper { height: 390px; }
+            .card { padding: 22px 20px; }
+            .card-body { font-size: 1.02rem; }
+        }
+
+        @media (min-width: 768px) {
+            .slider-container { max-width: 550px; }
+            .swiper-wrapper { height: 400px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wave-bg"></div>
+
+    <header>
+        <span class="badge"><i class="fa-solid fa-water"></i> 宜蘭頭城</span>
+        <h1>頭城的小知識</h1>
+        <p class="subtitle">滑動探索這座海洋小鎮的有趣故事</p>
+    </header>
+
+    <div class="controls">
+        <button class="toggle-btn active" id="btnSlideView">
+            <i class="fa-solid fa-clone"></i> 滑動卡片
+        </button>
+        <button class="toggle-btn" id="btnGridView">
+            <i class="fa-solid fa-border-all"></i> 全部列表
+        </button>
+    </div>
+
+    <!-- 滑動卡片 View -->
+    <div class="slider-container" id="sliderView">
+        <div class="swipe-hint">
+            <i class="fa-solid fa-hand-pointer"></i> 往左滑動換下一張
+        </div>
+        <div class="swiper-wrapper" id="swiperWrapper">
+            <!-- Cards injected via JS -->
+        </div>
+        <div class="card-controls">
+            <button class="nav-btn" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+            <span class="page-indicator" id="pageIndicator">1 / 16</span>
+            <button class="nav-btn" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <!-- 列表模式 View -->
+    <div class="grid-container" id="gridView">
+        <!-- Cards injected via JS -->
+    </div>
+
+    <script>
+        const triviaData = [
+            { id: "1", tagName: "地理與交通", icon: "fa-train", content: "頭城從北到南有七個臺鐵車站（石城、大里、大溪、龜山、外澳、頭城、頂埔），是全台灣擁有最多車站的鄉鎮。" },
+            { id: "2", tagName: "生活與日常", icon: "fa-store", content: "頭城青雲路（頭城國小 - 頭城陸橋）有二十家檳榔攤。" },
+            { id: "3", tagName: "地理與交通", icon: "fa-anchor", content: "頭城從北到南有八個漁港（石城、桶盤堀、大里、蕃薯寮、大溪第二漁港、大溪第一漁港、梗枋、烏石漁港），是全台灣擁有最多漁港的鄉鎮。" },
+            { id: "4", tagName: "歷史與記憶", icon: "fa-tree", content: "蘭陽博物館（2004年8月開工 - 2010年5月試營運）前身是一大片芭樂園與柚子樹。" },
+            { id: "5", tagName: "歷史與記憶", icon: "fa-drumstick-bite", content: "1995年前後頭城有開過《香雞城》，地點在現在青雲路《老街懷舊食堂》的店面。" },
+            { id: "6", tagName: "人文與地方", icon: "fa-user-graduate", content: "「頭城文風鼎盛，人才輩出」？不 Google 的話能說出幾位頭城相關、40歲以下的音樂家、作家、藝術家、運動選手等優秀青年呢？", list: ["楊肅浩（唱片歌手 - 宜中教師）", "賴志遠（出書作家 - 宜中教師）", "連明偉（台灣當代作家）", "康潤之（書法家）", "李慈雲（全運會鐵餅金牌 - 宜中教練）", "陳建嘉（富邦籃球隊 - 宜中教練 - 頭中教練）", "張宗憲（富邦勇士隊 - 台灣噴射機）"] },
+            { id: "7", tagName: "生活與日常", icon: "fa-utensils", content: "除了便利商店，半夜三點肚子餓的話，只有《85度C》對面的《頭城豆漿店》有開。" },
+            { id: "8", tagName: "生活與日常", icon: "fa-mug-hot", content: "以頭城車站為圓心，包含便利商店，半徑300公尺內有超過30家賣早餐的店家。" },
+            { id: "9", tagName: "人文與地方", icon: "fa-landmark", content: "頭城出過三位民選縣長：", list: ["盧纘祥（1951–1954）", "林才添（1960–1964）", "呂國華（2005–2009）"] },
+            { id: "10", tagName: "地理與交通", icon: "fa-triangle-exclamation", content: "頭城青雲路（頭城國小 - 阿宗芋冰）是砂石車、大卡車最容易闖紅燈的路口，用路人請小心。" },
+            { id: "11", tagName: "人文與地方", icon: "fa-users", content: "根據戶政資料，從2014年開始，頭城鎮人口即跌破三萬人，現（2026年6月）為27,969人，鎮公所已沒有「主祕」一缺。" },
+            { id: "12", tagName: "歷史與記憶", icon: "fa-gamepad", content: "頭城曾經有過《小豆苗》，現址是已貼出租。老闆同地還有開過電動玩具店，任天堂紅白機新台幣10元玩15分鐘的那種。" },
+            { id: "13", tagName: "生活與日常", icon: "fa-bus", content: "逛星期五頭城夜市有機會可以欣賞遊覽車司機高超的駕駛技術。" },
+            { id: "14", tagName: "歷史與記憶", icon: "fa-fire-burner", content: "2002年，頭城鎮上曾經有過「鐵板燒店」，就在現在頭城商場燒餅蛋餅店店面。" },
+            { id: "15", tagName: "歷史與記憶", icon: "fa-dumpster", content: "宜蘭還沒有焚化爐前，頭城的垃圾都是掩埋在九股山上（1980–2004）。" },
+            { id: "16", tagName: "歷史與記憶", icon: "fa-film", content: "頭城曾經有過 MTV 店，就在青雲路《合記便當》旁，檳榔攤那棟大樓。" }
+        ];
+
+        let currentIndex = 0;
+        const swiperWrapper = document.getElementById('swiperWrapper');
+        const gridView = document.getElementById('gridView');
+        const pageIndicator = document.getElementById('pageIndicator');
+
+        // Create HTML content for card
+        function createCardElement(item) {
+            let listHtml = '';
+            if (item.list) {
+                listHtml = `<ul class="card-list">${item.list.map(li => `<li>${li}</li>`).join('')}</ul>`;
+            }
+
+            return `
+                <div class="card-header">
+                    <span class="card-num">NO. ${item.id.padStart(2, '0')}</span>
+                    <i class="fa-solid ${item.icon} card-icon"></i>
+                </div>
+                <div class="card-body">
+                    ${item.content}
+                    ${listHtml}
+                </div>
+                <div class="card-footer">
+                    <span class="card-tag"># ${item.tagName}</span>
+                    <i class="fa-regular fa-compass" style="color: var(--ocean-light);"></i>
+                </div>
+            `;
+        }
+
+        // Render Slider View
+        function renderSlider() {
+            swiperWrapper.innerHTML = '';
+            triviaData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = createCardElement(item);
+                
+                // Stack offset style
+                const offset = index - currentIndex;
+                if (offset === 0) {
+                    card.style.transform = 'translateX(0) scale(1)';
+                    card.style.opacity = '1';
+                    card.style.zIndex = '10';
+                } else if (offset > 0) {
+                    card.style.transform = `translateX(${offset * 12}px) scale(${1 - offset * 0.05})`;
+                    card.style.opacity = offset > 2 ? '0' : '0.6';
+                    card.style.zIndex = 10 - offset;
+                } else {
+                    card.style.transform = 'translateX(-120%) rotate(-10deg)';
+                    card.style.opacity = '0';
+                    card.style.zIndex = '0';
+                }
+
+                swiperWrapper.appendChild(card);
+            });
+
+            pageIndicator.innerText = `${currentIndex + 1} / ${triviaData.length}`;
+            setupSwipeEvents();
+        }
+
+        // Render Grid View
+        function renderGrid() {
+            gridView.innerHTML = '';
+            triviaData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = createCardElement(item);
+                gridView.appendChild(card);
+            });
+        }
+
+        // Navigation Functions
+        function nextCard() {
+            if (currentIndex < triviaData.length - 1) {
+                currentIndex++;
+                renderSlider();
+            } else {
+                // Return to start with smooth effect
+                currentIndex = 0;
+                renderSlider();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderSlider();
+            }
+        }
+
+        document.getElementById('nextBtn').addEventListener('click', nextCard);
+        document.getElementById('prevBtn').addEventListener('click', prevCard);
+
+        // Touch / Swipe Logic
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+
+        function setupSwipeEvents() {
+            const activeCard = swiperWrapper.children[currentIndex];
+            if (!activeCard) return;
+
+            activeCard.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                isDragging = true;
+            }, { passive: true });
+
+            activeCard.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                currentX = e.touches[0].clientX;
+                const diffX = currentX - startX;
+                if (diffX < 0) { // Sliding Left
+                    activeCard.style.transform = `translateX(${diffX}px) rotate(${diffX * 0.05}deg)`;
+                }
+            }, { passive: true });
+
+            activeCard.addEventListener('touchend', (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                const diffX = currentX - startX;
+                
+                // Threshold for swipe (50px)
+                if (diffX < -50 && currentX !== 0) {
+                    nextCard();
+                } else if (diffX > 50 && currentX !== 0) {
+                    prevCard();
+                } else {
+                    renderSlider(); // Reset position if swipe was too short
+                }
+                startX = 0;
+                currentX = 0;
+            });
+        }
+
+        // Switch View Modes
+        const btnSlideView = document.getElementById('btnSlideView');
+        const btnGridView = document.getElementById('btnGridView');
+        const sliderView = document.getElementById('sliderView');
+
+        btnSlideView.addEventListener('click', () => {
+            btnSlideView.classList.add('active');
+            btnGridView.classList.remove('active');
+            sliderView.style.display = 'flex';
+            gridView.style.display = 'none';
+        });
+
+        btnGridView.addEventListener('click', () => {
+            btnGridView.classList.add('active');
+            btnSlideView.classList.remove('active');
+            sliderView.style.display = 'none';
+            gridView.style.display = 'grid';
+            renderGrid();
+        });
+
+        // Initialize
+        renderSlider();
+    </script>
+</body>
+</html>
